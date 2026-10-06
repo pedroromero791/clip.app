@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="291116" async data-cfasync="false"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClipApp - Extrae lo mejor de tus videos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de colores personalizados -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0b0e',      
+                        panelBg: '#15151a',     
+                        clipOrange: '#ff5722',  
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- ESTILOS DE ANIMACIÓN Y EFECTOS -->
+    <style>
+        /* Efecto Glitch del Logo */
+        .glitch-text {
+            color: white;
+            text-shadow: 
+                1.5px 0px 0px rgba(0, 100, 255, 0.8), 
+                -1.5px 0px 0px rgba(255, 0, 100, 0.8);
+        }
+
+        /* Cuadrícula en movimiento */
+        .bg-grid-animated {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(to right, rgba(255, 87, 34, 0.25) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 87, 34, 0.25) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1; 
+            animation: panGrid 8s linear infinite;
+        }
+
+        @keyframes panGrid {
+            0% { background-position: 0px 0px; }
+            100% { background-position: 60px 60px; }
+        }
+
+        /* Scanlines (Líneas de pantalla de video) */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.4) 51%);
+            background-size: 100% 4px;
+            z-index: 2; 
+            pointer-events: none;
+        }
+
+        /* Partículas flotantes de luz blanca */
+        .particle {
+            position: fixed;
+            bottom: -50px;
+            width: 4px;
+            height: 4px;
+            background: #ffffff; /* Color de la partícula cambiado a blanco */
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8); /* Resplandor blanco */
+            border-radius: 50%;
+            z-index: 3;
+            animation: floatUp 15s infinite ease-in;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-120vh) scale(2); opacity: 0; }
+        }
+
+        /* Clase para suavizar cuando el ratón sale de la imagen 3D */
+        .tilt-smooth-return {
+            transition: transform 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-200 font-sans flex flex-col min-h-screen relative overflow-x-hidden">
+
+    <!-- FONDOS ANIMADOS Y PARTÍCULAS -->
+    <div class="bg-grid-animated"></div>
+    <div class="scanlines"></div>
+    <div class="fixed top-[-10%] left-1/2 transform -translate-x-1/2 w-[800px] h-[500px] bg-clipOrange opacity-20 blur-[150px] pointer-events-none rounded-full z-0"></div>
+    
+    <!-- Generador de partículas en distintas posiciones y velocidades -->
+    <div class="particle" style="left: 10%; animation-duration: 12s; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 25%; animation-duration: 18s; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 50%; animation-duration: 14s; animation-delay: 5s;"></div>
+    <div class="particle" style="left: 75%; animation-duration: 16s; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 90%; animation-duration: 13s; animation-delay: 4s;"></div>
+
+    <!-- Navegación -->
+    <nav class="p-6 flex justify-between items-center max-w-6xl mx-auto w-full relative z-10">
+        <div class="flex items-center gap-3">
+            <!-- TU LOGO VECTORIZADO -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10">
+                <path d="M8 4H4v16h4" stroke="#ffffff" />
+                <path d="M16 4h4v16h-4" stroke="#ff5722" />
+                <polygon points="9 8 16 12 9 16 9 8" fill="#ff5722" stroke="none" />
+            </svg>
+            <div class="text-3xl font-black tracking-tighter flex">
+                <span class="glitch-text">CLIP</span>
+                <span class="text-clipOrange">APP</span>
+            </div>
+        </div>
+        <a href="#donar" class="text-sm font-semibold text-gray-400 hover:text-clipOrange transition duration-300">Apoyar el proyecto</a>
+    </nav>
+
+    <!-- Sección Principal (Hero) -->
+    <main class="flex-grow flex flex-col items-center justify-center text-center px-6 pt-16 pb-8 relative z-10">
+
+        <div class="inline-block px-4 py-1.5 rounded-full border border-clipOrange/30 bg-clipOrange/10 text-clipOrange text-xs font-bold tracking-widest mb-6 uppercase shadow-[0_0_15px_rgba(255,87,34,0.15)]">
+            Editor de reencuadre manual
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight tracking-tight text-white drop-shadow-lg">
+            Tus mejores jugadas, <br> 
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-clipOrange to-orange-400">
+                en un solo clic.
+            </span>
+        </h1>
+        <p class="text-gray-400 text-lg md:text-xl max-w-2xl mb-12 bg-darkBg/50 p-2 rounded-lg inline-block">
+            La herramienta más ágil para cortar, extraer y reencuadrar los momentos clave de tus videos y streams. Calidad profesional, sin complicaciones.
+        </p>
+
+        <!-- Botón de Descarga con Efecto "Latido/Pulse" -->
+        <div class="relative flex flex-col sm:flex-row gap-4 mb-20 group">
+            <!-- Anillo que palpita detrás del botón -->
+            <div class="absolute -inset-1 bg-gradient-to-r from-clipOrange to-orange-600 rounded-lg blur opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+            
+            <a href="https://github.com/pedroromero791/clip.app/releases/latest/download/CLIP-APP-Setup-1.1.0.exe" class="relative bg-clipOrange hover:bg-orange-600 text-white font-bold py-4 px-10 rounded-lg text-lg border border-orange-400/50 transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Descargar ClipApp
+            </a>
+        </div>
+
+        <!-- PREVIEW + PUBLICIDAD LATERAL -->
+        <div class="w-full max-w-[1400px] mx-auto flex items-start justify-center">
+
+            <!-- PREVIEW DE LA INTERFAZ CON EFECTO 3D -->
+            <div id="app-preview" class="w-full max-w-5xl rounded-xl border border-gray-800 bg-panelBg p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative tilt-smooth-return" style="transform-style: preserve-3d;">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-darkBg opacity-50 pointer-events-none rounded-xl"></div>
+                <!-- Tu imagen de la interfaz -->
+                <img src="interfaz.png" alt="Interfaz de ClipApp" class="w-full rounded-lg rounded-b-none border border-gray-800/50 relative z-20 shadow-2xl">
+            </div>
+
+        </div>
+
+        <!-- ANUNCIO MONETAG - IN-PAGE PUSH -->
+        <div class="w-full max-w-4xl mx-auto my-12 flex justify-center relative z-20">
+            <script>(function(s){s.dataset.zone='11963716',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+        </div>
+    </main>
+
+    <!-- Sección de Donaciones -->
+    <section id="donar" class="py-20 px-6 w-full mt-auto relative z-10 border-t border-gray-800/50 bg-gradient-to-b from-darkBg/90 to-[#050507] backdrop-blur-sm">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-4 text-white">¿Te sirvió la herramienta?</h2>
+            <p class="text-gray-400 mb-12 max-w-xl mx-auto">ClipApp es de descarga gratuita. Si te ayuda a ahorrar tiempo en tus ediciones, puedes apoyar al creador para mantener los servidores activos.</p>
+            
+            <div class="flex flex-col md:flex-row justify-center items-center gap-8">
+                <!-- Opción Yape -->
+                <div class="bg-panelBg/90 p-8 rounded-2xl border border-gray-800 hover:border-purple-500/50 transition-colors flex flex-col items-center group shadow-2xl backdrop-blur-md">
+                    <h3 class="text-2xl font-bold mb-1 text-purple-400">Yape</h3>
+                    <p class="text-sm text-gray-500 mb-6">Escanea el código desde tu app</p>
+                    
+                    <div class="p-2 bg-white rounded-xl mb-4 group-hover:scale-105 transition-transform duration-300">
+                        <!-- IMAGEN DEL QR DE YAPE -->
+                        <img src="qr-yape.png" alt="QR de Yape" class="w-32 h-32 object-cover">
+                    </div>
+                    
+                    <p class="font-mono text-sm text-gray-300 bg-gray-900 px-4 py-2 rounded-lg border border-gray-800">Cel: 949 827 125</p>
+                </div>
+
+                <!-- Opción Internacional (PayPal / Ko-fi) -->
+                <div class="bg-panelBg/90 p-8 rounded-2xl border border-gray-800 hover:border-clipOrange/50 transition-colors flex flex-col items-center shadow-2xl backdrop-blur-md">
+                    <h3 class="text-2xl font-bold mb-1 text-white">Internacional</h3>
+                    <p class="text-sm text-gray-500 mb-6">Invítame un café por Ko-fi o PayPal</p>
+                    
+                    <a href="TU_LINK_DE_KOFI" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 border border-gray-700 mt-2 flex items-center gap-2">
+                        <span class="text-xl">☕</span> Apoyar en Ko-fi
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="text-center p-8 text-gray-600 text-sm border-t border-gray-900 bg-[#050507] relative z-10">
+        &copy; 2026 ClipApp. Desarrollado con pasión para creadores de contenido.
+    </footer>
+
+    <!-- SCRIPT MÁGICO PARA EL EFECTO 3D EN LA IMAGEN -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const preview = document.getElementById('app-preview');
+            
+            // Cuando el ratón se mueve SOBRE la imagen
+            preview.addEventListener('mousemove', (e) => {
+                // Quitar la clase suave para que el movimiento sea instantáneo
+                preview.classList.remove('tilt-smooth-return');
+                
+                const rect = preview.getBoundingClientRect();
+                // Calcular posición del ratón respecto al centro de la imagen
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Limitar la rotación máxima (10 grados)
+                const rotateX = ((y / rect.height) - 0.5) * -10;
+                const rotateY = ((x / rect.width) - 0.5) * 10;
+                
+                // Aplicar rotación 3D
+                preview.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+            });
+
+            // Cuando el ratón SALE de la imagen
+            preview.addEventListener('mouseleave', () => {
+                // Añadir la clase suave para que vuelva a su sitio con estilo
+                preview.classList.add('tilt-smooth-return');
+                // Devolver a la posición original plana
+                preview.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+            });
+        });
+    </script>
+    <!-- VIGNETTE MONETAG -->
+    <script>(function(s){s.dataset.zone='11963636',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+</body>
+</html>
