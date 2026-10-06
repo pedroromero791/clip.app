@@ -1,0 +1,57 @@
+{
+  "name": "clip-app-editor",
+  "version": "1.1.0",
+  "description": "CLIP APP - editor de reencuadre 9:16",
+  "main": "main.js",
+  "author": "CLIP APP",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^38.8.6",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.clipapp.editor",
+    "productName": "CLIP APP",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "resources/app/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "tools",
+        "to": "tools",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "CLIP-APP-Setup-${version}.${ext}",
+      "icon": "build/clip-app.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "CLIP APP",
+      "include": "installer.nsh"
+    },
+    "icon": "build/clip-app.ico"
+  }
+}
