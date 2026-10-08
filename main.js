@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session } = require('electron');
+const { app, BrowserWindow, ipcMain, session, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
@@ -197,37 +197,12 @@ async function ensurePotServer() {
         }
       );
 
-      const waitForPort = async () => {
-        const deadline = Date.now() + 12000;
-
-        while (Date.now() < deadline) {
-          if (await isPortOpen(POT_PORT)) {
-            finish();
-            return;
-          }
-
-          await new Promise(resolve => setTimeout(resolve, 150));
-        }
-
-        finish(
-          new Error(
-            'El servidor PO Token indicó que inició, pero el puerto 4416 todavía no responde.\n' +
-            output.slice(-1500)
-          )
-        );
-      };
-
       const inspect = data => {
         const text = data.toString();
         output += text;
 
         if (/Started POT server/i.test(text)) {
-          /*
-           * No damos por listo el servidor solo porque escribió
-           * "Started". Esperamos a que 127.0.0.1:4416 realmente
-           * acepte conexiones. Esto evita el error del primer arranque.
-           */
-          waitForPort();
+          finish();
         }
       };
 
@@ -253,6 +228,183 @@ async function ensurePotServer() {
   });
 
   return potServerStarting;
+}
+
+
+
+/* =========================================================
+   ACTUALIZACIONES DE CLIP APP
+   ========================================================= */
+
+const UPDATE_REPO = 'pedroromero791/clip.app';
+let updateCheckRunning = false;
+
+function normalizeVersion(value) {
+  return String(value || '')
+    .trim()
+    .replace(/^v/i, '')
+    .split('-')[0]
+    .split('+')[0];
+}
+
+function compareVersions(a, b) {
+  const pa = normalizeVersion(a).split('.').map(n => parseInt(n, 10) || 0);
+  const pb = normalizeVersion(b).split('.').map(n => parseInt(n, 10) || 0);
+
+  for (let i = 0; i < 3; i++) {
+    const x = pa[i] || 0;
+    const y = pb[i] || 0;
+    if (x > y) return 1;
+    if (x < y) return -1;
+  }
+  return 0;
+}
+
+async function getLatestRelease() {
+  const response = await fetch(
+    `https://api.github.com/repos/${UPDATE_REPO}/releases/latest`,
+    {
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'CLIP-APP-Updater'
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`GitHub respondió con HTTP ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+async function downloadUpdate(url, destination) {
+  const parsed = new URL(url);
+
+  const allowed =
+    parsed.protocol === 'https:' &&
+    (
+      parsed.hostname === 'github.com' ||
+      parsed.hostname.endsWith('.githubusercontent.com')
+    );
+
+  if (!allowed) {
+    throw new Error('URL de actualización no válida.');
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'CLIP-APP-Updater'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `No se pudo descargar la actualización (HTTP ${response.status}).`
+    );
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(destination, buffer);
+  return destination;
+}
+
+async function checkForUpdates() {
+  if (updateCheckRunning) return;
+  updateCheckRunning = true;
+
+  try {
+    const currentVersion = app.getVersion();
+    const release = await getLatestRelease();
+
+    if (!release || release.draft || release.prerelease) return;
+
+    const latestVersion =
+      normalizeVersion(release.tag_name || release.name);
+
+    if (!latestVersion) return;
+
+    if (compareVersions(latestVersion, currentVersion) <= 0) {
+      return;
+    }
+
+    const assets = Array.isArray(release.assets)
+      ? release.assets
+      : [];
+
+    const installer = assets.find(asset => {
+      const name = String(asset?.name || '');
+      const url = String(asset?.browser_download_url || '');
+
+      return (
+        /^CLIP-APP-Setup-.*\.exe$/i.test(name) &&
+        /^https:\/\/github\.com\//i.test(url)
+      );
+    });
+
+    if (!installer) {
+      throw new Error(
+        'La nueva versión no contiene el instalador oficial de CLIP APP.'
+      );
+    }
+
+    const result = await dialog.showMessageBox(win, {
+      type: 'info',
+      title: 'Nueva versión disponible',
+      message: `Hay una nueva versión de CLIP APP: ${latestVersion}`,
+      detail:
+        `Versión actual: ${currentVersion}\n` +
+        `Nueva versión: ${latestVersion}\n\n` +
+        `¿Deseas instalarla ahora?`,
+      buttons: ['Instalar ahora', 'Más tarde'],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true
+    });
+
+    if (result.response !== 0) return;
+
+    const tempDir = ensureDir(
+      path.join(app.getPath('temp'), 'CLIP APP Updates')
+    );
+
+    const installerPath = path.join(
+      tempDir,
+      safeName(installer.name)
+    );
+
+    await downloadUpdate(
+      installer.browser_download_url,
+      installerPath
+    );
+
+    const launch = spawn(
+      installerPath,
+      [],
+      {
+        detached: true,
+        stdio: 'ignore',
+        windowsHide: false
+      }
+    );
+
+    launch.unref();
+    app.quit();
+
+  } catch (error) {
+    console.error(
+      '[CLIP APP] Error al buscar actualización:',
+      error?.message || error
+    );
+  } finally {
+    updateCheckRunning = false;
+  }
+}
+
+function scheduleUpdateCheck() {
+  setTimeout(() => {
+    checkForUpdates();
+  }, 4000);
 }
 
 
@@ -1295,17 +1447,7 @@ app.whenReady().then(
 
     createWindow();
 
-    /*
-     * Calentar el servidor PO Token desde el arranque.
-     * runYoutube() vuelve a comprobarlo, así que si el usuario
-     * pulsa YouTube inmediatamente, esperará hasta que esté listo.
-     */
-    ensurePotServer().catch(error => {
-      console.error(
-        '[CLIP APP] No se pudo iniciar el servidor PO Token al arrancar:',
-        error?.message || error
-      );
-    });
+    scheduleUpdateCheck();
 
 
     /*
